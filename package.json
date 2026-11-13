@@ -1,0 +1,14 @@
+{
+  "name": "projeto-integrador-ii",
+  "version": "1.0.0",
+  "description": "Sistema TaskFlow em MVC - PIT Engenharia de Software II",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node tests/tarefa.test.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6"
+  }
+}
