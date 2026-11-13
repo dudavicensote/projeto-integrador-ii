@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>TaskFlow - Gerenciador</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6f9; padding: 20px; display: flex; justify-content: center; }
+        .container { background: #fff; width: 100%; max-width: 600px; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c3e50; }
+        input, textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background: #2980b9; color: white; border: none; padding: 10px; width: 100%; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #1f6391; }
+        ul { list-style: none; padding: 0; }
+        li { background: #f9fbfc; border: 1px solid #e1e8ed; padding: 12px; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        li.concluida { background: #eef9f1; text-decoration: line-through; color: #27ae60; }
+        .acoes button { padding: 5px 10px; margin-left: 5px; width: auto; font-size: 0.8rem; }
+        .btn-concluir { background: #27ae60; }
+        .btn-excluir { background: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TaskFlow</h1>
+        <form id="formTarefa">
+            <input type="text" id="titulo" placeholder="Título da tarefa..." required>
+            <textarea id="descricao" placeholder="Descrição opcional..."></textarea>
+            <button type="submit">Adicionar Tarefa</button>
+        </form>
+        <ul id="listaTarefas"></ul>
+    </div>
+    <script>
+        const form = document.getElementById('formTarefa');
+        const lista = document.getElementById('listaTarefas');
+
+        async function carregar() {
+            const res = await fetch('/api/tarefas');
+            const dados = await res.json();
+            lista.innerHTML = '';
+            dados.forEach(t => {
+                const li = document.createElement('li');
+                if (t.status === 'Concluída') li.classList.add('concluida');
+                li.innerHTML = `
+                    <span><strong>${t.titulo}</strong> - ${t.descricao || ''}</span>
+                    <div class="acoes">
+                        ${t.status !== 'Concluída' ? `<button class="btn-concluir" onclick="concluir(${t.id})">Concluir</button>` : ''}
+                        <button class="btn-excluir" onclick="excluir(${t.id})">Excluir</button>
+                    </div>
+                `;
+                lista.appendChild(li);
+            });
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await fetch('/api/tarefas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ titulo: document.getElementById('titulo').value, descricao: document.getElementById('descricao').value })
+            });
+            form.reset();
+            carregar();
+        });
+
+        async function concluir(id) {
+            await fetch(`/api/tarefas/${id}`, { method: 'PUT' });
+            carregar();
+        }
+
+        async function excluir(id) {
+            await fetch(`/api/tarefas/${id}`, { method: 'DELETE' });
+            carregar();
+        }
+
+        carregar();
+    </script>
+</body>
+</html>
